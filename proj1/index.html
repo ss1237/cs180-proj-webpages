@@ -1,0 +1,366 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 10%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			h2 {
+				text-align: center;
+			}
+
+			h3 {
+				text-align: center;
+				font-size: 30px;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+
+			blockquote {
+				background-color: #d3d3d3;
+				padding: 10px 15px;
+				border: 1px solid #888;
+				color: #4a4a4a;
+				font-size: 16px;
+				font-style: normal;
+				border-radius: 4px;
+			}
+
+			.author-block {
+				text-align: center;
+				margin: 20px auto;
+				padding: 15px;
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				border: 1px solid #888;
+				width: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>
+			<div style="font-size: 1em; font-weight: 600; color: black;">CS 180 Fall 2025</div>
+			<div style="font-size: 0.9em; font-weight: 600; color: black; margin: 10px 0;">Project 1: <span style="font-weight: 300;">Colorizing the Prokudin-Gorskii Photo Collection</span></div>
+		</h1>
+
+		<div class="author-block">
+			<div style="font-size: 1.1em; font-weight: 500; margin-bottom: 5px;">Saathvik Selvan</div>
+			<div style="font-size: 0.9em; color: #6c757d;">
+				<a href="mailto:sselvan@berkeley.edu" style="color: #0057A8; text-decoration: none;">sselvan@berkeley.edu</a>
+			</div>
+		</div>
+
+		<br>
+
+		<p>In the early 1900s, Sergei Mikhailovich Prokudin-Gorskii photographed the Russian Empire using a special camera that recorded three exposures of each scene through red, green, and blue filters on glass plates. The Library of Congress later acquired and digitized these plates, providing the separate black-and-white channel images that can be computationally aligned to reconstruct the original color photographs. We aim to align the three channels of the Prokudin-Gorskii images to reconstruct the original color photographs.</p>
+
+		<br>
+
+		<h2>Part 1: Basic Alignment</h2>
+		
+		<blockquote>
+			As suggested, we fix the blue channel, and align the green and red channels to the blue channel using the NCC and SSD metrics. We search over a sliding window of size 15x15 pixels to find the best alignment, aiming to maximize our chosen alignment metric. When calculating this metric, we remove a small border of pixels (10%) from the edges of the image to avoid edge effects. For this project, we use the normalized cross-correlation (NCC) and sum of squared differences (SSD) metrics, as explained on the project spec, noting that NCC qualitatively works better for this task and using it for the remainder of the project.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <!-- SSD Results Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_cathedral_ssd.jpg" width="200px" />
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">cathedral</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (5, 2), Red: (12, 3)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_monastery_ssd.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">monastery</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (-3, 2), Red: (3, 2)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_tobolsk_ssd.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">tobolsk</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (3, 3), Red: (6, 3)</div>
+				</td>
+			  </tr>
+			  <!-- NCC Results Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_cathedral_ncc.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">cathedral</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (5, 2), Red: (12, 3)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_monastery_ncc.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">monastery</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (-3, 2), Red: (3, 2)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_tobolsk_ncc.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">tobolsk</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (3, 3), Red: (6, 3)</div>
+				</td>
+			  </tr>
+			</table>
+			<div style="text-align: center; margin-top: 10px; font-style: italic; color: #555;">
+				<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Alignment Results Comparison</div>
+				<div>Top row: SSD alignment | Bottom row: NCC alignment</div>
+			</div>
+		</div>
+		
+		
+		<h2>Part 2: Speeding it Up</h2>
+		
+		<blockquote>
+			The above approach works for fairly smaller images, but takes much longer for larger images. Instead, we use an image pyramid to speed up the alignment process. We create a pyramid of the image by successively downsampling versions of the image, and align each level of the pyramid to the corresponding level of the reference image. We then use the alignment results from the current level to initialize the alignment at the next level, and use this repeatedly to find the best alignment of the original image. This is much faster than the previous approach, and allows us to work with larger images.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_church.jpg" width="400px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">church</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (25, 4), Red: (58, -4)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_lugano.jpg" width="400px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">lugano</div>
+				  <div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (41, -16), Red: (93, -29)</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part 3: Cropping</h2>
+
+		<blockquote>
+			Although not immediately visible here, the alignment process creates various white/black border artifacts around the aligned and superimposed images. To remove these artifacts, we convert the image to grayscale and find the variance along each row and column. We then find the border where the variance exceeds a threshold, and crop the image to remove the low-variance border regions. An alternative to this would be to consider variance along each individual channel, but this was not implemented. In the following images, a black border has been included to highlight the cropping process.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <!-- Uncropped Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_cathedral_uncropped.jpg" width="200px" style="border: 2px solid black;"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_monastery_uncropped.jpg" width="200px" style="border: 2px solid black;"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_tobolsk_uncropped.jpg" width="200px" style="border: 2px solid black;"/>
+				</td>
+			  </tr>
+			  <!-- Cropped Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_cathedral_cropped.jpg" width="200px" style="border: 2px solid black;"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_monastery_cropped.jpg" width="200px" style="border: 2px solid black;"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_tobolsk_cropped.jpg" width="200px" style="border: 2px solid black;"/>
+				</td>
+			  </tr>
+			</table>
+			<div style="text-align: center; margin-top: 10px; font-style: italic; color: #555;">
+				<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Alignment Results Comparison</div>
+				<div>Top row: Uncropped | Bottom row: Cropped</div>
+			</div>
+		</div>
+
+		<h2>Part 4: White Balance</h2>
+		
+		<blockquote>
+			We also apply white balance to the aligned and cropped images to make our images look more realistic. For this, we apply two different methods: gray world and white patch. The gray world method works by setting the mean of the red, green, and blue channels to the same value, while the white patch method works by scaling the brightest pixels (95th percentile) in the red, green, and blue channels to have equal values, assuming the brightest regions should be white. As the white patch method looks better, we use it for the final images.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <!-- Original Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_cathedral_cropped.jpg" width="200px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_monastery_cropped.jpg" width="200px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part3_tobolsk_cropped.jpg" width="200px"/>
+				</td>
+			  </tr>
+			  <!-- Gray World Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part4_cathedral_gray_world.jpg" width="200px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part4_monastery_gray_world.jpg" width="200px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part4_tobolsk_gray_world.jpg" width="200px"/>
+				</td>
+			  </tr>
+			  <!-- White Patch Row -->
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part4_cathedral_white_patch.jpg" width="200px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part4_monastery_white_patch.jpg" width="200px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part4_tobolsk_white_patch.jpg" width="200px"/>
+				</td>
+			  </tr>
+			</table>
+			<div style="text-align: center; margin-top: 10px; font-style: italic; color: #555;">
+				<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Alignment Results Comparison</div>
+				<div>Top row: Original | Middle row: Gray World | Bottom row: White Patch</div>
+			</div>
+		</div>
+	</body>
+
+	<h2>Part 5: Final Results</h2>
+
+	<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			<!-- Row 1: Small images -->
+			<tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_cathedral.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">cathedral</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (5, 2), Red: (12, 3)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_monastery.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">monastery</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (-3, 2), Red: (3, 2)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_tobolsk.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">tobolsk</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (3, 3), Red: (6, 3)</div>
+				</td>
+			</tr>
+			<!-- Row 2: Large images -->
+			<tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_church.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">church</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (25, 4), Red: (58, -4)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_emir.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">emir</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (49, 24), Red: (104, 56)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_harvesters.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">harvesters</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (60, 17), Red: (124, 13)</div>
+				</td>
+			</tr>
+			<!-- Row 3: More large images -->
+			<tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_icon.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">icon</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (41, 17), Red: (89, 23)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_italil.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">italil</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (38, 21), Red: (76, 35)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_lastochikino.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">lastochikino</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (-3, -2), Red: (75, -9)</div>
+				</td>
+			</tr>
+			<!-- Row 4: Final large images -->
+			<tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_lugano.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">lugano</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (41, -16), Red: (93, -29)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_melons.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">melons</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (82, 11), Red: (156, 12)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_self_portrait.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">self_portrait</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (79, 29), Red: (156, 33)</div>
+				</td>
+			</tr>
+			<!-- Row 5: Last images -->
+			<tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_siren.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">siren</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (49, -6), Red: (96, -25)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<!-- Empty cell for balance -->
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_three_generations.jpg" width="200px"/>
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">three_generations</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (53, 14), Red: (112, 11)</div>
+				</td>
+			</tr>
+		</table>
+		<div style="text-align: center; margin-top: 10px; font-style: italic; color: #555;">
+			<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Final Colorized Results</div>
+			<div>All images processed with NCC alignment, cropping, and white patch white balance</div>
+		</div>
+	</div>
+
+	<h2> Part 5.5: Additional Examples</h2>
+	
+	<div style="display: flex; flex-direction: column; align-items: center;">	
+		<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			<tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_boy.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">boy</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (45, -13), Red: (103, -11)</div>
+				  </td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_lake.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">lake</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (-23, 8), Red: (-34, 11)</div>
+				  </td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part5_ruins.jpg" width="200px" />
+					<div style="font-size: 14px; font-weight: bold; margin-top: 5px;">ruins</div>
+					<div style="font-size: 12px; color: #666; margin-top: 2px;">Green: (33, 5), Red: (79, 7)</div>
+				  </td>
+			  </tr>
+		</table>
+	</div>
+
+</html>
