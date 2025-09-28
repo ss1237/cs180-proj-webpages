@@ -1,0 +1,725 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 10%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			h2 {
+				text-align: center;
+			}
+
+			h3 {
+				text-align: center;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+
+			blockquote {
+				background-color: #d3d3d3;
+				padding: 10px 15px;
+				border: 1px solid #888;
+				color: #4a4a4a;
+				font-size: 16px;
+				font-style: normal;
+				border-radius: 4px;
+			}
+
+			.author-block {
+				text-align: center;
+				margin: 20px auto;
+				padding: 15px;
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				border: 1px solid #888;
+				width: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>
+			<div style="font-size: 1em; font-weight: 600; color: black;">CS 180 Fall 2025</div>
+			<div style="font-size: 0.9em; font-weight: 600; color: black; margin: 10px 0;">Project 2: <span style="font-weight: 300;">Fun with Filters and Frequencies</span></div>
+		</h1>
+
+		<div class="author-block">
+			<div style="font-size: 1.1em; font-weight: 500; margin-bottom: 5px;">Saathvik Selvan</div>
+			<div style="font-size: 0.9em; color: #6c757d;">
+				<a href="mailto:sselvan@berkeley.edu" style="color: #0057A8; text-decoration: none;">sselvan@berkeley.edu</a>
+			</div>
+		</div>
+
+		<br>
+
+		<p>This project explores the fascinating world of image processing through filters and frequency domain manipulation. We implement edge detection using finite difference operators, create unsharp masking for image sharpening, build hybrid images that appear different at various viewing distances, and use multi-resolution blending to seamlessly combine images using Gaussian and Laplacian stacks.</p>
+
+		<br>
+
+		<h2>Part 1.1: Convolutions From Scratch!</h2>
+
+		<blockquote> We implement a custom convolution function that manually implements the convolution operation using nested loops. We compare our custom implementation with scipy's built-in convolve function to verify correctness. Using these, we then detect vertical and horizontal edges using the finite difference kernels, and use a box filter to smooth the image.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_original.png" width="300px" />
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Original Image</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			We compare three different convolution implementations: our slow nested-loop version, our optimized version, and scipy's built-in function. The timing results show that scipy's implementation is significantly faster, while our implementations produce identical results but with different performance characteristics.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_x_slow.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">dx (4 Loops)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_x.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">dx (2 Loops)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_x_builtin.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">dx (Scipy)</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_y_slow.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">dy (4 Loops)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_y.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">dy (2 Loops)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_y_builtin.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">dy (Scipy)</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <div style="font-size: 12px; color: #666; font-weight: bold;">Time: 3.46s</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <div style="font-size: 12px; color: #666; font-weight: bold;">Time: 7.45s</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <div style="font-size: 12px; color: #666; font-weight: bold;">Time: 0.023s</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			We also apply a box filter (simple averaging filter) to smooth the image, demonstrating another common convolution operation.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_1_box.png" width="300px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Box Filter Result</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+
+
+		<h2>Part 1.2: Finite Difference Operator</h2>
+		
+		<blockquote>
+			We implement edge detection using finite difference operators D_x = [1, 0, -1] and D_y = [[1], [0], [-1]]. We convolve the cameraman image with these operators to compute partial derivatives in x and y directions. The gradient magnitude is computed using sqrt(dx² + dy²). Finally, we binarize the gradient magnitude using an appropriate threshold to create an edge image, balancing between capturing real edges and suppressing noise.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_2_original.png" width="200px" />
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Original Cameraman</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_2_x.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Finite Differences (dx)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_2_y.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Finite Differences (dy)</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_2_grad.png" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Gradient Magnitude</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_2_grad_bin.png" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Binarized Edge Image</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			The threshold (0.3) was chosen qualitatively to preserve important structural edges (camera outline, tripod legs, building edges) while suppressing most background noise. Some fine texture details are lost, but the major edges that define object boundaries are clearly preserved, making this a reasonable trade-off for edge detection.
+		</blockquote>
+		
+		
+		<h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
+		
+		<blockquote>
+			To reduce noise in edge detection, we first apply Gaussian smoothing before computing derivatives. We can either (1) blur the image then apply derivative filters, or (2) create derivative of Gaussian filters and convolve directly. Both approaches are mathematically equivalent due to the associativity of convolution, but the second is more computationally efficient. We use cv2.getGaussianKernel() to create a 1D Gaussian and take the outer product with its transpose to get a 2D Gaussian kernel.
+		</blockquote>
+
+		<h3>2D Gaussian Filter and DoG Filters</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_gaussian_2d.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">2D Gaussian Filter</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_dxg.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">DoG Filter (dx)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_dyg.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">DoG Filter (dy)</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Approach 1: Blur First, Then Compute Derivatives</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_gaussian.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Gaussian Blurred Image</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_grad.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Gradient Magnitude</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_grad_bin.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Binary Edges</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Approach 2: Direct DoG Convolution</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_grad_gaussian.png" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">DoG Gradient Magnitude</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_3_grad_bin_gaussian.png" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">DoG Binary Edges</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			Both approaches produce identical results, as expected from the associativity of convolution. The DoG approach significantly reduces noise compared to the raw finite difference operators from Part 1.2, producing cleaner edge maps with better suppression of texture noise while preserving important structural edges. The threshold of 0.15 was used for both approaches to create the binary edge images.
+		</blockquote>
+
+		<h2>Part 1 Bonus: Gradient Orientation Visualization</h2>
+		
+		<blockquote>
+			We compute both the gradient magnitude and direction from the partial derivatives, then visualize the edges using HSV color space where the hue represents the gradient direction and the saturation/value represent the gradient magnitude. This creates a colorful visualization where different edge orientations are shown in different colors.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_bonus_grad_mag.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Gradient Magnitude</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_bonus_grad_dir.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Gradient Direction</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part1_bonus_grad_hsv.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">HSV Colored Edges</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part 2.1: Image "Sharpening"</h2>
+
+		<blockquote>
+			We implement unsharp masking to sharpen images. The Gaussian filter acts as a low-pass filter that retains only low frequencies. By subtracting the blurred version from the original, we extract the high frequencies. Adding these high frequencies back to the original image makes it appear sharper. The formula is: sharpened = original + α × (original - blurred), which can be combined into a single convolution operation called the unsharp mask filter.
+		</blockquote>
+
+		<h3>Unsharp Masking Process</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_original_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Original (Blurry)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_gaussian_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Gaussian Blurred</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_details_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">High Frequency Details</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Sharpening Results - Taj Mahal</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_original_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Original</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_1_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">α = 1</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_2_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">α = 2</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_5_taj.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">α = 5</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Sharpening Results - Additional Image</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_original_tralalero.jpeg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Original</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_1_tralalero.jpeg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">α = 1</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_2_tralalero.jpeg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">α = 2</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_5_tralalero.jpeg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">α = 5</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			The unsharp masking technique effectively enhances image sharpness by amplifying high-frequency details. With α = 1, we get subtle sharpening; α = 2 provides more noticeable enhancement; while α = 5 creates very strong sharpening that may introduce artifacts. Additionally, we try applying this sharpening multiple times to the same image.
+		</blockquote>
+
+		<h3>Effects of Repeated Sharpening</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_original_taj.jpg" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Original</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_2_taj.jpg" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Sharpened Once (α = 2)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_1_sharp_alpha_2_taj_2.jpg" width="250px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Sharpened Twice (α = 2)</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			Applying sharpening multiple times can lead to over-enhancement and artifacts. While the first application improves clarity, the second application may introduce unrealistic edge enhancement, noise amplification, and potential ringing artifacts around high-contrast edges.
+		</blockquote>
+
+		<h2>Part 2.2: Hybrid Images</h2>
+		
+		<blockquote>
+			We create hybrid images by combining the high frequency components of one image with the low frequency components of another. This creates images that look different when viewed from different distances. Up close, you see the high-frequency image, while from far away, you see the low-frequency image. We use Gaussian filters to separate frequency bands and show both spatial and frequency domain representations.
+		</blockquote>
+
+		<h3>Complete Process: Derek + Nutmeg Hybrid</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im1_aligned.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Nutmeg (Aligned)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im1_fft.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Nutmeg FFT</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im1_high.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Nutmeg High Freq</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im1_high_fft.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Nutmeg High FFT</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im2_aligned.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Derek (Aligned)</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im2_fft.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Derek FFT</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im2_low.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Derek Low Freq</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_im2_low_fft.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Derek Low FFT</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_hybrid.png" width="300px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Final Derek + Nutmeg Hybrid</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Additional Hybrid Examples</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/potter.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Young Harry Potter</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/potter_after.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Older Daniel Radcliffe</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_hybrid_potter.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Potter Hybrid</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/home_before.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Home During Construction</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/home_after.jpg" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Home After Construction</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_2_hybrid_home.png" width="200px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Home Hybrid</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			The hybrid images demonstrate the power of frequency domain manipulation. The Derek + Nutmeg hybrid shows Nutmeg's facial details from up close but Derek's overall shape from far away. The Potter hybrid combines young Harry Potter's low-frequency features with older Daniel Radcliffe's high-frequency structure. The home hybrid shows the house in construction from a distance, while revealing details of the finished house up close. The choice of cutoff frequency is crucial for achieving the desired perceptual effect, and this depends on the Gaussian filter used.
+		</blockquote>
+
+		<h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+			
+		<blockquote>
+			We implement Gaussian and Laplacian stacks for multi-resolution analysis. Gaussian stacks show progressive blurring, while Laplacian stacks show frequency bands. These are essential for the multi-resolution blending in the next section. The following shows the complete Laplacian pyramid blending process following Burt and Adelson (1983).
+		</blockquote>
+
+		<h3>Gaussian and Laplacian Stacks</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_apple_gauss_0.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple Gauss L0</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_apple_gauss_2.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple Gauss L2</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_apple_gauss_4.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple Gauss L4</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_orange_gauss_0.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange Gauss L0</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_orange_gauss_2.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange Gauss L2</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_orange_gauss_4.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange Gauss L4</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_apple_lap_0.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple Lap L0</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_apple_lap_2.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple Lap L2</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_apple_lap_4.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple Lap L4</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_orange_lap_0.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange Lap L0</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_orange_lap_2.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange Lap L2</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_orange_lap_4.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange Lap L4</div>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_mask_0.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Mask L0</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_mask_2.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Mask L2</div>
+				</td>
+				<td style="text-align: center; padding: 8px">
+				  <img src="imgs/part2_3_mask_4.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Mask L4</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+			<h3>Laplacian Pyramid Blending Process</h3>
+			<div style="display: flex; flex-direction: column; align-items: center;">
+				<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				  <tr>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_masked_apple_lap_0.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(a) Masked Apple L0</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_masked_orange_lap_0.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(b) Masked Orange L0</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_blended_lap_0.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(c) Blended L0</div>
+					</td>
+				  </tr>
+				  <tr>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_masked_apple_lap_2.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(d) Masked Apple L2</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_masked_orange_lap_2.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(e) Masked Orange L2</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_blended_lap_2.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(f) Blended L2</div>
+					</td>
+				  </tr>
+				  <tr>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_masked_apple_lap_4.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(g) Masked Apple L4</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_masked_orange_lap_4.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(h) Masked Orange L4</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_blended_lap_4.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(i) Blended L4</div>
+					</td>
+				  </tr>
+				  <tr>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_apple.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(j) Masked Apple</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_orange.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(k) Masked Orange</div>
+					</td>
+					<td style="text-align: center; padding: 5px">
+					  <img src="imgs/part2_3_oraple.png" width="150px"/>
+					  <div style="font-size: 12px; font-weight: bold; margin-top: 3px;">(l) Final Oraple</div>
+					</td>
+				  </tr>
+				</table>
+			</div>
+
+		<blockquote>
+			The Laplacian pyramid blending process shows how different frequency bands are combined at multiple resolutions. The first three rows show the high, medium, and low-frequency parts of the Laplacian pyramid (levels 0, 2, and 4). The left and middle columns show the masked apple and orange images weighted by the smooth interpolation functions (mask), while the right column shows the blended contributions. The final row shows the masked images and the seamlessly blended result.
+		</blockquote>
+
+		<h2>Part 2.4: Multiresolution Blending</h2>
+
+		<blockquote>
+			We apply the multi-resolution blending technique to create seamless blends between different images using custom masks. This technique allows for natural-looking composites by blending different frequency components at multiple scales. We demonstrate three different masking approaches: vertical split, uniform mask, and irregular mask.
+		</blockquote>
+
+		<h3>Apple + Orange</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/apple.jpeg" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Apple</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/orange.jpeg" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Orange</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_3_mask_0.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Mask</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_3_oraple.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Blend</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Breaking Bad (Jesse + Walter)</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/bb_1.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Jesse</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/bb_2.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Walter</div>
+				</td>
+				<div style="display: flex; flex-direction: column; align-items: center;">
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_3_mask_0.png" width="180px"/>
+					  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Mask</div>
+					</td>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_4_bb_blended.png" width="180px"/>
+					  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Blend</div>
+					</td>
+				</div>
+			</table>
+		</div>
+
+		<h3>Irregular Mask (Background + Path)</h3>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/background.jpg" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Background</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/path.jpg" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Path</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_4_path_mask.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Irregular Mask</div>
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part2_4_path_blended.png" width="180px"/>
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">Blend</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			The multi-resolution blending technique works effectively with different types of masks. The vertical split mask creates a seamless transition between apple and orange. The uniform mask demonstrates blending with a simple geometric boundary. The irregular mask shows how complex shapes can be blended naturally, such as compositing a path into a background scene. In all cases, the multi-resolution approach prevents visible seams that would occur with simpler approaches.
+		</blockquote>
+
+	</div>
+</body>
+
+</html>
