@@ -1,0 +1,239 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 10%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			h2 {
+				text-align: center;
+			}
+
+			h3 {
+				text-align: center;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+
+			blockquote {
+				background-color: #d3d3d3;
+				padding: 10px 15px;
+				border: 1px solid #888;
+				color: #4a4a4a;
+				font-size: 16px;
+				font-style: normal;
+				border-radius: 4px;
+			}
+
+			.author-block {
+				text-align: center;
+				margin: 20px auto;
+				padding: 15px;
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				border: 1px solid #888;
+				width: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>
+			<div style="font-size: 1em; font-weight: 600; color: black;">CS 180 Fall 2025</div>
+			<div style="font-size: 0.9em; font-weight: 600; color: black; margin: 10px 0;">Project 3: <span style="font-weight: 300;">(Auto)stitching and Photo Mosaics</span></div>
+		</h1>
+
+		<div class="author-block">
+			<div style="font-size: 1.1em; font-weight: 500; margin-bottom: 5px;">Saathvik Selvan</div>
+			<div style="font-size: 0.9em; color: #6c757d;">
+				<a href="mailto:sselvan@berkeley.edu" style="color: #0057A8; text-decoration: none;">sselvan@berkeley.edu</a>
+			</div>
+		</div>
+
+		<br>
+
+		<p>This project explores image warping and homography-based transformations to create seamless image mosaics. We implement homography computation for perspective transformations, create image rectification for correcting distorted quadrilaterals, perform image warping with different interpolation methods, and build seamless image mosaics by blending multiple photographs together using homographies and alpha-aware blending techniques.</p>
+
+		<br>
+
+		<h2>Part A.1: Shoot the Pictures</h2>
+
+		<blockquote>We shoot two sets of photographs from three different angles, making sure to fix the center of projection (COP) while rotating the camera while capturing photos.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_1_1.jpg" width="250px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_1_2.jpg" width="250px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_1_3.jpg" width="250px" />
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_2_1.jpg" width="250px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_2_2.jpg" width="250px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_2_3.jpg" width="250px" />
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part A.2: Recover Homographies</h2>
+
+		<blockquote>Here, we recover the homography matrix from the point correspondences between the two images. First, we visualize the point correspondences between the two images. Then, using our <code>computeH</code> function, we recover the homography matrix. The exact equations are also shown below.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a2_corr_mosaic_1_12.png" width="600px" />
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>Since we use 5 points here, we have a total of 10 equations and 8 unknowns (since one entry of H is guaranteed to be 1). The system of equations is shown below, where each equation corresponds to one coordinate of the point in the first image mapped to the corresponding coordinate in the second image. </blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a2_equations.png" width="600px" />
+				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">System of Equations</div>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>This overdetermined system (10 equations, 8 unknowns) is solved using least squares to find the optimal homography matrix H.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a2_H.png" width="600px" />
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part A.3: Warp the Images</h2>
+
+		<blockquote>Now that we have recovered the homography, we can warp the images using two different interpolation methods: Nearest Neighbor and Bilinear interpolation. Comparing the two, we see that while bilinear interpolation is more accurate, it is also more computationally expensive.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a3_comparison.png" width="600px" />
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			We also demonstrate image rectification by correcting perspective distortion in rectangular objects. For this example, we use tiles on a floor, which we know are squares. We compute the homography matrix H using the point correspondences between the original image and arbitrary square coordinates, and then apply the homography to warp the image.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a3_rectification.png" width="600px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part A.4: Blend the Images into a Mosaic</h2>
+		
+		<blockquote>
+			We blend the images into a mosaic by fixing a central image and then computing the homography matrix H using the point correspondences between the original images and the target image. We then apply the homography to warp the images and blend them using alpha blending.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_1_1.jpg" width="250px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/mosaic_1_2.jpg" width="250px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/mosaic_1_3.jpg" width="250px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_a4_mosaic_1.png" width="600px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_2_1.jpg" width="250px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/mosaic_2_2.jpg" width="250px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/mosaic_2_3.jpg" width="250px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_a4_mosaic_2.png" width="600px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			When using alpha blending, my initial images did not have an alpha channel, so I had to create one using the <code>create_alpha_channel</code> function. This function creates an alpha channel based on the brightness of the image, where brighter regions have higher alpha values and darker regions have lower alpha values. This allowed for a smooth transition between the images, where we weight the values of pixels from the images based on their brightness.
+		</blockquote>
+
+	</div>
+</body>
+
+</html>
