@@ -69,13 +69,18 @@
 
 		<br>
 
-		<p>This project explores image warping and homography-based transformations to create seamless image mosaics. We implement homography computation for perspective transformations, create image rectification for correcting distorted quadrilaterals, perform image warping with different interpolation methods, and build seamless image mosaics by blending multiple photographs together using homographies and alpha-aware blending techniques.</p>
+		<p>This project explores image warping and homography-based transformations to create seamless image mosaics. We implement homography computation for perspective transformations, create image rectification for correcting distorted quadrilaterals, perform image warping with different interpolation methods, and build seamless image mosaics by blending multiple photographs together using homographies and alpha-aware blending techniques.
+		</p>
+
+		<p>
+		The second part of the project deals with automating this process, using Harris corner detection, feature descriptor extraction, feature matching, and RANSAC to find the best homography matrix H. We use these homography matrices to stitch images together into a mosaic similar to the first part.
+		</p>
 
 		<br>
 
 		<h2>Part A.1: Shoot the Pictures</h2>
 
-		<blockquote>We shoot two sets of photographs from three different angles, making sure to fix the center of projection (COP) while rotating the camera while capturing photos.</blockquote>
+		<blockquote>We shoot multiple sets of photographs from three different angles, making sure to fix the center of projection (COP) while rotating the camera while capturing photos.</blockquote>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
@@ -101,6 +106,17 @@
 				  <img src="imgs/mosaic_2_3.jpg" width="250px" />
 				</td>
 			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_3_1.jpg" width="250px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_3_2.jpg" width="250px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_3_3.jpg" width="250px" />
+				</td>
+			  </tr>
 			</table>
 		</div>
 
@@ -112,26 +128,22 @@
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center; padding: 10px">
-				  <img src="imgs/part_a2_corr_mosaic_1_12.png" width="600px" />
+				  <img src="imgs/part_a2_corr_mosaic_1_12.png" width="800px" />
 				</td>
 			  </tr>
 			</table>
 		</div>
 
-		<blockquote>Since we use 5 points here, we have a total of 10 equations and 8 unknowns (since one entry of H is guaranteed to be 1). The system of equations is shown below, where each equation corresponds to one coordinate of the point in the first image mapped to the corresponding coordinate in the second image. </blockquote>
+		<blockquote>For each correspondence (x<sub>i</sub>, y<sub>i</sub>) → (x'<sub>i</sub>, y'<sub>i</sub>), we get two equations from the homography transformation:</blockquote>
 
-		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
-			  <tr>
-				<td style="text-align: center; padding: 10px">
-				  <img src="imgs/part_a2_equations.png" width="600px" />
-				  <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">System of Equations</div>
-				</td>
-			  </tr>
-			</table>
+		<div style="display: flex; flex-direction: column; align-items: center; margin: 20px 0;">
+			<div style="font-family: 'Times New Roman', serif; font-size: 18px; line-height: 2;">
+				<div>h<sub>11</sub>x<sub>i</sub> + h<sub>12</sub>y<sub>i</sub> + h<sub>13</sub> - h<sub>31</sub>x<sub>i</sub>x'<sub>i</sub> - h<sub>32</sub>y<sub>i</sub>x'<sub>i</sub> = x'<sub>i</sub></div>
+				<div>h<sub>21</sub>x<sub>i</sub> + h<sub>22</sub>y<sub>i</sub> + h<sub>23</sub> - h<sub>31</sub>x<sub>i</sub>y'<sub>i</sub> - h<sub>32</sub>y<sub>i</sub>y'<sub>i</sub> = y'<sub>i</sub></div>
+			</div>
 		</div>
 
-		<blockquote>This overdetermined system (10 equations, 8 unknowns) is solved using least squares to find the optimal homography matrix H.</blockquote>
+		<blockquote>Rearranging these equations and substituting h<sub>33</sub> = 1, along with our known values of (x<sub>i</sub>, y<sub>i</sub>) and (x'<sub>i</sub>, y'<sub>i</sub>), we get the linear system <strong>Ah = b</strong> where h = [h<sub>11</sub>, h<sub>12</sub>, h<sub>13</sub>, h<sub>21</sub>, h<sub>22</sub>, h<sub>23</sub>, h<sub>31</sub>, h<sub>32</sub>]<sup>T</sup>. For n point correspondences, this is a system of 2n equations and 8 unknowns. This overdetermined system is solved using least squares to find the optimal homography matrix H. For the above two images, we get the following homography matrix:</blockquote>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
@@ -145,27 +157,32 @@
 
 		<h2>Part A.3: Warp the Images</h2>
 
-		<blockquote>Now that we have recovered the homography, we can warp the images using two different interpolation methods: Nearest Neighbor and Bilinear interpolation. Comparing the two, we see that while bilinear interpolation is more accurate, it is also more computationally expensive.</blockquote>
+		<blockquote>Now that we have recovered the homography, we can warp the images using two different interpolation methods: Nearest Neighbor and Bilinear interpolation. Comparing the two by zooming in, we see that bilinear interpolation is more accurate and smoother. However, it is also more computationally expensive and was a little slower than nearest neighbor interpolation when generating these images. </blockquote>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center; padding: 10px">
-				  <img src="imgs/part_a3_comparison.png" width="600px" />
+				  <img src="imgs/part_a3_comparison.png" width="800px" />
 				</td>
 			  </tr>
 			</table>
 		</div>
 
 		<blockquote>
-			We also demonstrate image rectification by correcting perspective distortion in rectangular objects. For this example, we use tiles on a floor, which we know are squares. We compute the homography matrix H using the point correspondences between the original image and arbitrary square coordinates, and then apply the homography to warp the image.
+			We also demonstrate image rectification by correcting perspective distortion in rectangular objects. For this examples, we use tiles on a floor and a panel on a wall, which we know are squares. We compute the homography matrix H using the point correspondences between the original images and arbitrary square coordinates, and then apply the homographies to warp the images.
 		</blockquote>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center; padding: 10px">
-				  <img src="imgs/part_a3_rectification.png" width="600px"/>
+				  <img src="imgs/part_a3_rectification.png" width="800px"/>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a3_rectification_mosaic_4_1.png" width="800px"/>
 				</td>
 			  </tr>
 			</table>
@@ -174,7 +191,7 @@
 		<h2>Part A.4: Blend the Images into a Mosaic</h2>
 		
 		<blockquote>
-			We blend the images into a mosaic by fixing a central image and then computing the homography matrix H using the point correspondences between the original images and the target image. We then apply the homography to warp the images and blend them using alpha blending.
+			We blend the images into a mosaic by fixing a central image and then computing the homography matrix H using the point correspondences between the original images and the target image. We then apply the homography to warp the images and blend them using alpha blending. The images were downscaled before blending to speed up the process.
 		</blockquote>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -197,7 +214,7 @@
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center; padding: 10px">
-					<img src="imgs/part_a4_mosaic_1.png" width="600px"/>
+					<img src="imgs/part_a4_mosaic_1.png" width="800px"/>
 				</td>
 			  </tr>
 			</table>
@@ -223,16 +240,164 @@
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center; padding: 10px">
-					<img src="imgs/part_a4_mosaic_2.png" width="600px"/>
+					<img src="imgs/part_a4_mosaic_2.png" width="800px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/mosaic_3_1.jpg" width="250px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/mosaic_3_2.jpg" width="250px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/mosaic_3_3.jpg" width="250px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_a4_mosaic_3.png" width="800px"/>
 				</td>
 			  </tr>
 			</table>
 		</div>
 
 		<blockquote>
-			When using alpha blending, my initial images did not have an alpha channel, so I had to create one using the <code>create_alpha_channel</code> function. This function creates an alpha channel based on the brightness of the image, where brighter regions have higher alpha values and darker regions have lower alpha values. This allowed for a smooth transition between the images, where we weight the values of pixels from the images based on their brightness.
+			When using alpha blending, my initial images did not have an alpha channel, so I had to create one using the <code>create_alpha_channel</code> function. This function creates an alpha channel based on the brightness of the image, where brighter regions have higher alpha values and darker regions have lower alpha values. These masks were warped with the original images, and then the images were blended based on the alpha channel.
 		</blockquote>
 
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_a4_alpha_masks.png" width="800px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+
+		<h2>Part B.1: Harris Corner Detection</h2>
+
+		<blockquote>
+			We use the Harris corner detection algorithm to detect corners in the image using the provided code. The initial image has thousands of corners, so we also implement Adaptive Non-Maximal Suppression (ANMS) to select the best corners. This works by discarding corners that are not the maximum in a local neighborhood, based on a specified radius. This helps to drastically reduce the number of corners.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b1_harris_mosaic_1.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part B.2: Feature Descriptor Extraction</h2>
+
+		<blockquote>
+			Using our selected corners, we extract features by taking a 40x40 axis-aligned patch centered at each corner. We then blur this patch and sample every 5th pixel to create a 8x8 feature descriptor. Finally, we normalize the feature descriptor to have zero mean and unit variance. We visualize some of the features below.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b2_features_mosaic_1.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part B.3: Feature Matching</h2>
+
+		<blockquote>
+			Now, given two sets of features from two images, we implement feature matching as described in the paper using the Lowe ratio test. We compute matches as the 1-NN, but use the ratio between the 1-NN and 2-NN distances to filter out potentially false matches. Finally, we keep only the bidirectional matches to ensure a 1-1 mapping.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b3_matches_mosaic_1.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b3_matches_mosaic_2.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>Part B.4: RANSAC for Robust Homography</h2>
+
+		<blockquote>
+			Using the matches from the previous step, we implement RANSAC as described in class to find the best homography matrix H. We use these homography matrices to stitch images together into a mosaic similar to Part A.4.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b4_mosaic_1.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b4_mosaic_2.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_b4_mosaic_3.png" style="width: 800px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<blockquote>
+			Comparing the manually and automatically generated mosaics, we expect (and see) that the automatically generated mosaics are better because they use more points and have more accurate mappings, resulting in more accurate homographies.
+		</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a4_mosaic_1.png" style="width: 400px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_b4_mosaic_1.png" style="width: 400px"/>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a4_mosaic_2.png" style="width: 400px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_b4_mosaic_2.png" style="width: 400px"/>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part_a4_mosaic_3.png" style="width: 400px"/>
+				</td>
+				<td style="text-align: center; padding: 10px">
+					<img src="imgs/part_b4_mosaic_3.png" style="width: 400px"/>
+				  </td>
+			  </tr>
+			</table>
+		</div>
 	</div>
 </body>
 
