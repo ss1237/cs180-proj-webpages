@@ -1,0 +1,532 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 10%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			h2 {
+				text-align: center;
+			}
+
+			h3 {
+				text-align: center;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+
+			blockquote {
+				background-color: #d3d3d3;
+				padding: 10px 15px;
+				border: 1px solid #888;
+				color: #4a4a4a;
+				font-size: 16px;
+				font-style: normal;
+				border-radius: 4px;
+			}
+
+			.author-block {
+				text-align: center;
+				margin: 20px auto;
+				padding: 15px;
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				border: 1px solid #888;
+				width: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>
+			<div style="font-size: 1em; font-weight: 600; color: black;">CS 180 Fall 2025</div>
+			<div style="font-size: 0.9em; font-weight: 600; color: black; margin: 10px 0;">Project 4: <span style="font-weight: 300;">Neural Radiance Field!</span></div>
+		</h1>
+
+		<div class="author-block">
+			<div style="font-size: 1.1em; font-weight: 500; margin-bottom: 5px;">Saathvik Selvan</div>
+			<div style="font-size: 0.9em; color: #6c757d;">
+				<a href="mailto:sselvan@berkeley.edu" style="color: #0057A8; text-decoration: none;">sselvan@berkeley.edu</a>
+			</div>
+		</div>
+
+		<br>
+
+		<p>This project explores Neural Radiance Fields (NeRF) for novel view synthesis from multi-view images. We implement camera calibration using ArUco tags, create neural fields to represent 2D images, build full Neural Radiance Fields for 3D scene representation, and train NeRFs on both provided datasets and our own captured data to generate photorealistic novel views of 3D scenes.
+		</p>
+
+		<br>
+
+		<h2>Part 0: Camera Calibration and 3D Scanning</h2>
+
+		<blockquote>In this part, we calibrate our camera using ArUco tags and capture a 3D scan of our chosen object. This involves detecting ArUco markers in calibration images, computing camera intrinsics, capturing object images with pose estimation, and creating a dataset for NeRF training.</blockquote>
+
+		<h3>Part 0.1: Calibrating Your Camera</h3>
+		
+        <blockquote>To calibrate the camera, we use the grid of ArUco tags to estimate the camera intrinsics. For every calibration image taken, we extract the ArUco tags and their corresponding tag coordinates. We then use the tag coordinates to estimate the camera intrinsics. Initially, our intrinsics were very off, but we see that this was fixed by having a diverse set of calibration images, both near and far from the camera.</blockquote>
+
+		<h3>Part 0.2: Capturing a 3D Object Scan</h3>
+		<blockquote>For this part, we decided to use a Nintendo Switch Pro Controller as our object of choice. We captured various images from all angles, aiming to keep our camera at a consistent distance from the object. Some of the initial images are shown below:</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part0_switch_1.jpg" width="300px" />
+				</td>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part0_switch_2.jpg" width="300px" />
+				</td>
+			  </tr>
+              <tr>
+                <td style="text-align: center; padding: 10px">
+				  <img src="imgs/part0_switch_3.jpg" width="300px" />
+				</td>
+                <td style="text-align: center; padding: 10px">
+				  <img src="imgs/part0_switch_4.jpg" width="300px" />
+                </td>
+              </tr>
+			</table>
+		</div>
+
+		<h3>Part 0.3: Estimating Camera Pose</h3>
+        <blockquote>Now that we have calibrated the camera, we can estimate the camera pose for each image. We use the ArUco tag with index 0 in each image to estimate the camera pose for each image as a rotation and translation from the origin (top left corner of the ArUco tag). Putting all of these together, we get the following camera frustums, displayed in Viser, where the origin is approximately the location of the ArUco tag.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; padding: 10px">
+				  <img src="imgs/part0_frustum_1.png" width="750px" style="border: 1px solid #000000;" />
+                  <figcaption>Camera Poses 1</figcaption>
+				</td>
+			  </tr>
+              <tr>
+                <td style="text-align: center; padding: 10px">
+				  <img src="imgs/part0_frustum_2.png" width="750px" style="border: 1px solid #000000;" />
+                  <figcaption>Camera Poses 2</figcaption>
+				</td>
+              </tr>
+			</table>
+		</div>
+
+		<h3>Part 0.4: Undistorting Images and Creating a Dataset</h3>
+        <blockquote>Finally, now that we have camera intrinsics and post estimates, we can undistort the images and create a dataset for training a NeRF. To avoid black pixels when undistorting, we crop the images to the region of interest, as calculated when when getting the new camera matrix. After applying undistortion, we then save the images and c2w matrices to a dataset for training a NeRF. Some of the undistorted images are shown below:</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part0_controller_grid.png" width="600px" />
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h2>Part 1: Fit a Neural Field to a 2D Image</h2>
+
+		<blockquote>We implement a neural field that can represent a 2D image by learning to map pixel coordinates to RGB values. This involves creating an MLP with sinusoidal positional encoding, implementing a dataloader for random pixel sampling, and optimizing the network to predict pixels in the target image.</blockquote>
+
+		<h3>Implementation and Model Architecture</h3>
+        <blockquote>We implement a multilayer perceptron (MLP) with sinusoidal positional encoding to map 2D pixel coordinates to RGB values. The positional encoding expands input coordinates using sinusoidal functions at different frequencies to help the network learn high-frequency details. Our dataloader randomly samples pixels from the image for training, normalizing both coordinates and colors to [0,1]. We use MSE loss and Adam optimizer. The model architecture uses a frequency level of 10, and layers as shown in the image below. We train for 1500 steps, with a batch size of 10k, and a learning rate of 1e-2.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_architecture.jpg" width="450px" />
+					</td>
+				</tr>
+			</table>
+		</div>
+
+
+
+		<h3>Training Progression</h3>
+        <blockquote>As we train the model, we keep track of the PSNR and take periodic snapshots of the rendered image. As shown below, the network converges to a PSNR of ~25 after 1500 steps.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_fox/psnr.png" width="450px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_fox.jpg" width="300px" />
+                            <figcaption>Fox (Original)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                    <tr>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part1_fox/snapshot_00001.png" width="250px" />
+                                <figcaption>Fox (Step 1)</figcaption>
+                            </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_fox/snapshot_00005.png" width="250px" />
+                            <figcaption>Fox (Step 5)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_fox/snapshot_00025.png" width="250px" />
+                            <figcaption>Fox (Step 25)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_fox/snapshot_00125.png" width="250px" />
+                            <figcaption>Fox (Step 125)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_fox/snapshot_00250.png" width="250px" />
+                            <figcaption>Fox (Step 250)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_fox/final.png" width="250px" />
+                            <figcaption>Fox (Step 1500)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+        <blockquote>In addition to this, we also train on a custom image and observe equally good results.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_dolphin/psnr.png" width="450px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_dolphin.png" width="300px" />
+                            <figcaption>Dolphin (Original)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                    <tr>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part1_dolphin/snapshot_00001.png" width="250px" />
+                                <figcaption>Dolphin (Step 1)</figcaption>
+                            </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_dolphin/snapshot_00005.png" width="250px" />
+                            <figcaption>Dolphin (Step 5)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_dolphin/snapshot_00025.png" width="250px" />
+                            <figcaption>Dolphin (Step 25)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_dolphin/snapshot_00150.png" width="250px" />
+                            <figcaption>Dolphin (Step 150)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_dolphin/snapshot_00250.png" width="250px" />
+                            <figcaption>Dolphin (Step 250)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part1_dolphin/final.png" width="250px" />
+                            <figcaption>Dolphin (Step 1500)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>Hyperparameter Analysis</h3>
+		<blockquote>We analyze two key hyperparameters: max positional encoding frequency \(L \in \{2, 10\}\) and model width \(W \in \{32, 256\}\). Positional encoding frequency primarily controls spatial detail. We see that higher \(L = 10\) captures fine textures and sharp edges, while lower \(L = 2\) produces smooth, blurred reconstructions. Model width affects overall capacity and artifact reduction. Larger \(W = 256\) yields sharper boundaries with fewer artifacts, while smaller \(W = 32\) introduces blockiness and oversmoothing. Importantly, width alone cannot recover high-frequency detail when positional encoding is limited, making \(L\) the dominant factor for texture fidelity.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_sweep_high_pe_high_width/final.png" width="300px" />
+                      <figcaption>L=10, W=256</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_sweep_high_pe_low_width/final.png" width="300px" />
+                      <figcaption>L=10, W=32</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_sweep_low_pe_high_width/final.png" width="300px" />
+                      <figcaption>L=2, W=256</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+					  <img src="imgs/part1_sweep_low_pe_low_width/final.png" width="300px" />
+                      <figcaption>L=2, W=32</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h2>Part 2: Fit a Neural Radiance Field from Multi-view Images</h2>
+
+		<blockquote>We extend our neural field to 3D by implementing a full Neural Radiance Field that learns to represent 3D scenes from multi-view images. This involves creating rays from camera parameters, sampling points along rays, implementing volume rendering, and training the NeRF on the Lego dataset as well as our own custom dataset.</blockquote>
+
+		<h3>Part 2.1: Create Rays from Cameras</h3>
+		<blockquote>First, we implement some functions essential to creating rays from each camera pose / image pair. We write a <code>transform</code> function that transforms a point from our camera coordinate system to the world coordinate system, and a <code>pixel_to_camera</code> function that is used to convert pixel coordinates to camera coordinates. Defining our pixel coordinates as \((u, v)\), our camera coordinates as \(\mathbf{X_c} = (x_c, y_c, z_c)\), and our world coordinates as \(\mathbf{X_w} = (x_w, y_w, z_w)\), we have the following relationshops in terms of our intrinsics and \(w2c\) matrix \(K\):</blockquote>
+
+		\begin{align} \begin{bmatrix} x_c \\ y_c \\ z_c \\ 1 \end{bmatrix} = \begin{bmatrix}
+        \mathbf{R}_{3\times3} &
+        \mathbf{t} \\ \mathbf{0}_{1\times3} & 1 \end{bmatrix} \begin{bmatrix} x_w \\ y_w \\ z_w \\ 1 \end{bmatrix}
+        \end{align}
+
+        \begin{align} s \begin{bmatrix} u \\ v \\ 1 \end{bmatrix} = \mathbf{K} \begin{bmatrix} x_c \\ y_c \\ z_c
+        \end{bmatrix} = \begin{bmatrix} f_x & 0 & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x_c \\ y_c \\ z_c \end{bmatrix} \end{align}
+
+        <blockquote>After writing these functions, we are then able to create rays from each pixel in an image by obtaining the origin of the ray (the camera center) and the direction of the ray (the normalized direction from the camera center to the pixel in the world coordinates), which we call \(\mathbf{r}_o\) and \(\mathbf{r}_d\) respectively from our <code>pixel_to_ray</code> function. These formulas are as such:</blockquote>
+
+        \begin{align} \mathbf{r}_o = t \end{align}
+
+        \begin{align} \mathbf{r}_d = \frac{\mathbf{X_w} - \mathbf{r}_o}{\|\mathbf{X_w} - \mathbf{r}_o\|} \end{align}
+
+		<h3>Part 2.2: Sampling</h3>
+		<blockquote>Now that we have the origin and direction of our ray in world coordinates, we can sample points from the ray. We define <code>near</code> and <code>far</code> as the minimum and maximum distances along the ray, respectively. We then sample points along the ray between these two bounds, which we can do either uniformly or randomly. For more robust training, we use random sampling.</blockquote>
+
+		<h3>Part 2.3: Putting the Dataloading All Together</h3>
+		<blockquote>Using the functions from Parts 2.1 and 2.2, we can now sample rays from each of our cameras. We can see this on both the Lego and controller datasets. Noticeably, for the Lego dataset, we use the parameters <code>near</code> = 2 and <code>far</code> = 6, while for the controller dataset, we use <code>near</code> = 0.3 and <code>far</code> = 0.7. This choice of parameters allows us to only sample points relevant to the object, while excluding points that are too close or too far away.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_lego_rays_1.png" width="600px" style="border: 1px solid #000000;" />
+                      <figcaption>Lego: All Cameras</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_lego_rays_2.png" width="600px" style="border: 1px solid #000000;" />
+                      <figcaption>Lego: Single Camera</figcaption>
+					</td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_controller_rays_1.png" width="600px" style="border: 1px solid #000000;" />
+                      <figcaption>Controller: All Cameras</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_controller_rays_2.png" width="600px" style="border: 1px solid #000000;" />
+                      <figcaption>Controller: Single Camera</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
+
+		<h3>Part 2.4: Neural Radiance Field</h3>
+		<blockquote>For the 3D NeRF, we modify the architecture from Part 1 as shown below. We note that our input is now a 3D world coordinate in addition to a ray direction. We not only output color, but also a density term, which we use to compute the final color of the ray using volume rendering. We note that some of the hyperparameters we can change here are the number of layers, the hidden dimension, and the lengths of the positional encodings.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+						<img src="imgs/part2_architecture.png" width="600px"/>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>Part 2.5: Volume Rendering</h3>
+		<blockquote>For volume rendering, we use the formula below, where \(\hat{C}(\mathbf{r})\) is the final color of the ray, \(\mathbf{c}_i\) is the color of the \(i\)th sample, \(\sigma_i\) is the density of the \(i\)th sample, \(\delta_i\) is the distance between the \(i\)th and \((i+1)\)th sample, and \(T_i\) is the transmittance of the \(i\)th sample. This is compared to the true color of a pixel \(\mathbf{c}_i\) to compute the loss.</blockquote>
+
+        \begin{align}
+        \hat{C}(\mathbf{r})=\sum_{i=1}^N T_i\left(1-\exp \left(-\sigma_i \delta_i\right)\right) \mathbf{c}_i, \text { where
+        } T_i=\exp
+        \left(-\sum_{j=1}^{i-1} \sigma_j \delta_j\right) \end{align}
+
+        <blockquote>Finally, putting this all together, we can train our NeRF using the model and loss function above. As suggested, we train with a batchsize of 10k rays per iteration, and we use an Adam optimizer with a learning rate of 5e-4. We train for 3000 iterations and achieve a Validation PSNR well above the required 23.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_5_lego/psnr_curve.png" width="450px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_5_lego/lego_render.gif" width="300px" />
+                            <figcaption>Lego (Render)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                    <tr>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part2_5_lego/step_0000.png" width="300px" />
+                                <figcaption>Lego (Step 0)</figcaption>
+                            </figure>
+                        </td>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part2_5_lego/step_0100.png" width="300px" />
+                                <figcaption>Lego (Step 100)</figcaption>
+                            </figure>
+                        </td>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part2_5_lego/step_0250.png" width="300px" />
+                                <figcaption>Lego (Step 250)</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_5_lego/step_1000.png" width="300px" />
+                            <figcaption>Lego (Step 1000)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_5_lego/step_1500.png" width="300px" />
+                            <figcaption>Lego (Step 1500)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_5_lego/step_3000.png" width="300px" />
+                            <figcaption>Lego (Step 3000)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+		<h2>Part 2.6: Training with Your Own Data</h2>
+
+		<blockquote>We train a NeRF on our own captured dataset from Part 0. Most of the training procedure is similar, except we change some hyperparameters. Since the camera poses are different, we use near and far bounds of 0.3 and 0.7, but keep the same 64 samples per ray as in Part 2.5. To account for the higher level of detail in these images, we increase the position PE to 40 and the direction PE to 15. We also use a learning rate of 5e-3 and train for 3000 steps. The results and PSNR curve are shown below.</blockquote>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+					  <img src="imgs/part2_6_controller/psnr_curve.png" width="450px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_6_controller/controller_render.gif" width="300px" />
+                            <figcaption>Controller (Render)</figcaption>
+                        </figure>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                    <tr>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part2_6_controller/step_0000.png" width="300px" />
+                                <figcaption>Controller (Step 0)</figcaption>
+                            </figure>
+                        </td>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part2_6_controller/step_0100.png" width="300px" />
+                                <figcaption>Controller (Step 100)</figcaption>
+                            </figure>
+                        </td>
+                        <td style="text-align: center; padding: 10px">
+                            <figure style="margin: 0;">
+                                <img src="imgs/part2_6_controller/step_0500.png" width="300px" />
+                                <figcaption>Controller (Step 500)</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_6_controller/step_1000.png" width="300px" />
+                            <figcaption>Controller (Step 1000)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_6_controller/step_1500.png" width="300px" />
+                            <figcaption>Controller (Step 1500)</figcaption>
+                        </figure>
+                    </td>
+                    <td style="text-align: center; padding: 10px">
+                        <figure style="margin: 0;">
+                            <img src="imgs/part2_6_controller/step_3000.png" width="300px" />
+                            <figcaption>Controller (Step 3000)</figcaption>
+                        </figure>
+                    </td>
+				</tr>
+			</table>
+		</div>
+
+        <blockquote>
+            Reflecting on part 2.6, I found it to be much harder than expected. Noticeably, my captured images were quite far away from the controller. Since I ended up downsampling the images, details on the controller were not as clear as I had hoped. However, this distance meant that the structure of the table and the ArUco tags were reconstructed quite well, which is visible in the final render.
+            
+            <br><br>
+
+            Additionally, as I spent a lot of time tuning the hyperparameters, I found that certain hyperparameters were more important than others. For example, given that the model had a hidden dimension of 256, increasing this would not help if the positional embeddings were not high enough. Similarly, increasing the number of samples along a ray when rendering would not help if the model itself was not good enough. This meant that having a more computationally expensive render was not always better if the model itself was not trained well enough.
+        </blockquote>
+
+	</div>
+</body>
+
+</html>
