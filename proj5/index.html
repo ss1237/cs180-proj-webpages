@@ -1,0 +1,848 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 10%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			h2 {
+				text-align: center;
+			}
+
+			h3 {
+				text-align: center;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+
+			blockquote {
+				background-color: #d3d3d3;
+				padding: 10px 15px;
+				border: 1px solid #888;
+				color: #4a4a4a;
+				font-size: 16px;
+				font-style: normal;
+				border-radius: 4px;
+			}
+
+			.author-block {
+				text-align: center;
+				margin: 20px auto;
+				padding: 15px;
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				border: 1px solid #888;
+				width: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>
+			<div style="font-size: 1em; font-weight: 600; color: black;">CS 180 Fall 2025</div>
+			<div style="font-size: 0.9em; font-weight: 600; color: black; margin: 10px 0;">Project 5: <span style="font-weight: 300;">Fun With Diffusion Models!</span></div>
+		</h1>
+
+		<div class="author-block">
+			<div style="font-size: 1.1em; font-weight: 500; margin-bottom: 5px;">Saathvik Selvan</div>
+			<div style="font-size: 0.9em; color: #6c757d;">
+				<a href="mailto:sselvan@berkeley.edu" style="color: #0057A8; text-decoration: none;">sselvan@berkeley.edu</a>
+			</div>
+		</div>
+
+		<br>
+
+		<p>This project explores the power of diffusion models for image generation and manipulation. In Part A, we implement diffusion sampling loops, use pre-trained models for various tasks including inpainting and creating optical illusions, and experiment with text-to-image generation using DeepFloyd IF. In Part B, we train our own diffusion model from scratch, using a U-Net architecture to generate handwritten digits from noise.
+		</p>
+
+		<br>
+
+        <h1>Part A: The Power of Diffusion Models!</h1>
+
+		<h2>Part 0: Setup</h2>
+
+		<blockquote>Using the DeepFloyd IF model, we experiment with various text prompts to generate images from random noise. The outputs are quite impressive! They are all quite diverse, but notably have bluer tones. This may be because of the specific prompts used, or some inherent bias in the model.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td colspan="2" style="text-align: center; padding: 10px">
+                        <figcaption>"a quiet harbor at sunrise with boats drifting through golden mist"</figcaption>
+                    </td>
+                </tr>
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_0_stage1.png" width="64px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_0_stage2.png" width="256px" />
+					</td>
+				</tr>
+                <tr>
+                    <td colspan="2" style="text-align: center; padding: 10px">
+                        <figcaption>"a time traveler sketching notes in a rain-soaked alley"</figcaption>
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_1_stage1.png" width="64px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_1_stage2.png" width="256px" />
+					</td>
+				</tr>
+                <tr>
+                    <td colspan="2" style="text-align: center; padding: 10px">
+                        <figcaption>"a celestial observatory floating above the clouds at twilight"</figcaption>
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_2_stage1.png" width="64px" />
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_2_stage2.png" width="256px" />
+					</td>
+				</tr>
+			</table>
+		</div>
+
+        <blockquote>Now, we pick one of the generated images and try out different numbers of inference steps. Since the second stage essentially acts as an upsampler, we find that changing the number of steps in the first stage has more interesting effects on the final image. As seen below, all images reflect the prompt well, but adding more steps can result in finer details. For example, the 500-step image shows a person walking in the background and their reflection, which weren't necessarily present in the lower step versions.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_1_stage2.png" width="200px" />
+                        <figcaption>20 Steps</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_100_steps.png" width="200px" />
+                        <figcaption>100 Steps</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a0_500_steps.png" width="200px" />
+                        <figcaption>500 Steps</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+        <blockquote>Finally, we note that the random seed used throughout this part of the project is <b>42</b>. This ensures reproducibility of the results shown.</blockquote>
+
+		<h2>Part 1: Sampling Loops</h2>
+
+		<h3>1.1 Implementing the Forward Process</h3>
+        <blockquote>We implement the forward process that adds noise to clean images, creating progressively noisier versions that simulate the diffusion process. To add noise, we follow the formula as given in the project website.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 10px">
+                        <img src="imgs/campanile_64x64.jpg" width="200px" />
+                        <figcaption>Original Image</figcaption>
+                    </td>
+                </tr>
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_250.png" width="200px" />
+                        <figcaption>Noisy Image (t = 250)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_500.png" width="200px" />
+                        <figcaption>Noisy Image (t = 500)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_750.png" width="200px" />
+                        <figcaption>Noisy Image (t = 750)</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.2 Classical Denoising</h3>
+        <blockquote>We attempt to denoise the noisy images using a Gaussian blur filter. However, we see that this does not work very well since the diffusion process introduces complex noise patterns that standard filters cannot effectively remove.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_250.png" width="200px" />
+                        <figcaption>Noisy Image (t = 250)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_500.png" width="200px" />
+                        <figcaption>Noisy Image (t = 500)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_750.png" width="200px" />
+                        <figcaption>Noisy Image (t = 750)</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a2_denoised_250.png" width="200px" />
+                        <figcaption>Gaussian Blur (t = 250)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a2_denoised_500.png" width="200px" />
+                        <figcaption>Gaussian Blur (t = 500)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a2_denoised_750.png" width="200px" />
+                        <figcaption>Gaussian Blur (t = 750)</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
+
+		<h3>1.3 One-Step Denoising</h3>
+        <blockquote>To have more accurate denoising, we implement one-step denoising using the diffusion model to directly predict clean images from noisy inputs. This approach provides a direct mapping from noisy to clean images in a single forward pass, but we notice that noisier images still suffer from a lack of detail when denoised.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_250.png" width="200px" />
+                        <figcaption>Noisy Image (t = 250)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_500.png" width="200px" />
+                        <figcaption>Noisy Image (t = 500)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a1_noise_level_750.png" width="200px" />
+                        <figcaption>Noisy Image (t = 750)</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a3_denoised_250.png" width="200px" />
+                        <figcaption>One-Step Denoising (t = 250)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a3_denoised_500.png" width="200px" />
+                        <figcaption>One-Step Denoising (t = 500)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a3_denoised_750.png" width="200px" />
+                        <figcaption>One-Step Denoising (t = 750)</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
+
+		<h3>1.4 Iterative Denoising</h3>
+        <blockquote>For even better quality, we implement iterative denoising that gradually removes noise over multiple steps, following the reverse diffusion process. At each step, we use the denoised image from the previous step as input to the denoising model, which outputs noise that we use to partially denoise the image further. By doing this, we can achieve higher quality results than single-step denoising.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_t_90.png" width="100px" />
+                        <figcaption>Noisy Image (t = 90)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_t_240.png" width="100px" />
+                        <figcaption>Noisy Image (t = 240)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_t_390.png" width="100px" />
+                        <figcaption>Noisy Image (t = 390)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_t_540.png" width="100px" />
+                        <figcaption>Noisy Image (t = 540)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_t_690.png" width="100px" />
+                        <figcaption>Noisy Image (t = 690)</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_iterative.png" width="200px" />
+                        <figcaption>Iterative Denoising</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_one_step.png" width="200px" />
+                        <figcaption>One-Step Denoising</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a4_blur_filtered.png" width="200px" />
+                        <figcaption>Gaussian Blur</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.5 Diffusion Model Sampling</h3>
+        <blockquote>Using the same function from 1.4, we start from completely random noise and iteratively denoise to generate new images. The results show realistic images, although the quality is not that great.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a5_0.png" width="100px" />
+                        <figcaption>Image 1</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a5_1.png" width="100px" />
+                        <figcaption>Image 2</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a5_2.png" width="100px" />
+                        <figcaption>Image 3</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a5_3.png" width="100px" />
+                        <figcaption>Image 4</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a5_4.png" width="100px" />
+                        <figcaption>Image 5</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.6 Classifier-Free Guidance (CFG)</h3>
+        <blockquote>We implement classifier-free guidance to improve the quality and text-alignment of generated images by combining unconditioned generations (with an empty prompt) and conditional generations, conditioned on the prompt "a high quality photo". We see that these images are much better than the ones from the previous part.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a6_0.png" width="100px" />
+                        <figcaption>Image 1</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a6_1.png" width="100px" />
+                        <figcaption>Image 2</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a6_2.png" width="100px" />
+                        <figcaption>Image 3</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a6_3.png" width="100px" />
+                        <figcaption>Image 4</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a6_4.png" width="100px" />
+                        <figcaption>Image 5</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.7 Image-to-Image Translation</h3>
+        <blockquote>Now, using our CFG implementation, we implement image-to-image translation by adding noise to existing images and then denoising conditioned on the text prompt "a high quality photo". We notice that for noised images closer to the original (a higher <code>i_start</code> value), the results are more faithful to the original image, while lower values produce more creative outputs.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/campanile_64x64.jpg" width="100px" />
+                        <figcaption>Campanile</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_camp_20.png" width="100px" />
+                        <figcaption>SDEdit (i_start=20)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_camp_10.png" width="100px" />
+                        <figcaption>SDEdit (i_start=10)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_camp_7.png" width="100px" />
+                        <figcaption>SDEdit (i_start=7)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_camp_5.png" width="100px" />
+                        <figcaption>SDEdit (i_start=5)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_camp_3.png" width="100px" />
+                        <figcaption>SDEdit (i_start=3)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_camp_1.png" width="100px" />
+                        <figcaption>SDEdit (i_start=1)</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/oski.jpg" width="100px" />
+                        <figcaption>Oski</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_oski_20.png" width="100px" />
+                        <figcaption>SDEdit (i_start=20)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_oski_10.png" width="100px" />
+                        <figcaption>SDEdit (i_start=10)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_oski_7.png" width="100px" />
+                        <figcaption>SDEdit (i_start=7)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_oski_5.png" width="100px" />
+                        <figcaption>SDEdit (i_start=5)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_oski_3.png" width="100px" />
+                        <figcaption>SDEdit (i_start=3)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_oski_1.png" width="100px" />
+                        <figcaption>SDEdit (i_start=1)</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/greece_64x64.jpg" width="100px" />
+                        <figcaption>Greece</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_greece_20.png" width="100px" />
+                        <figcaption>SDEdit (i_start=20)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_greece_10.png" width="100px" />
+                        <figcaption>SDEdit (i_start=10)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_greece_7.png" width="100px" />
+                        <figcaption>SDEdit (i_start=7)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_greece_5.png" width="100px" />
+                        <figcaption>SDEdit (i_start=5)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_greece_3.png" width="100px" />
+                        <figcaption>SDEdit (i_start=3)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_greece_1.png" width="100px" />
+                        <figcaption>SDEdit (i_start=1)</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.7.1 Hand-Drawn and Web Images</h3>
+        <blockquote>Using the same image-to-image technique as earlier, we apply it to hand-drawn and web images and observe some cool generations from different starting points!</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/bond.png" width="100px" />
+                        <figcaption>Bond</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_bond_20.png" width="100px" />
+                        <figcaption>SDEdit (i_start=20)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_bond_10.png" width="100px" />
+                        <figcaption>SDEdit (i_start=10)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_bond_7.png" width="100px" />
+                        <figcaption>SDEdit (i_start=7)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_bond_5.png" width="100px" />
+                        <figcaption>SDEdit (i_start=5)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_bond_3.png" width="100px" />
+                        <figcaption>SDEdit (i_start=3)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_bond_1.png" width="100px" />
+                        <figcaption>SDEdit (i_start=1)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/beach.png" width="100px" />
+                        <figcaption>Beach</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_beach_20.png" width="100px" />
+                        <figcaption>SDEdit (i_start=20)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_beach_10.png" width="100px" />
+                        <figcaption>SDEdit (i_start=10)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_beach_7.png" width="100px" />
+                        <figcaption>SDEdit (i_start=7)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_beach_5.png" width="100px" />
+                        <figcaption>SDEdit (i_start=5)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_beach_3.png" width="100px" />
+                        <figcaption>SDEdit (i_start=3)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_beach_1.png" width="100px" />
+                        <figcaption>SDEdit (i_start=1)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/donut.png" width="100px" />
+                        <figcaption>Donut</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_donut_20.png" width="100px" />
+                        <figcaption>SDEdit (i_start=20)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_donut_10.png" width="100px" />
+                        <figcaption>SDEdit (i_start=10)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_donut_7.png" width="100px" />
+                        <figcaption>SDEdit (i_start=7)</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_donut_5.png" width="100px" />
+                        <figcaption>SDEdit (i_start=5)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_donut_3.png" width="100px" />
+                        <figcaption>SDEdit (i_start=3)</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_donut_1.png" width="100px" />
+                        <figcaption>SDEdit (i_start=1)</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.7.2 Inpainting</h3>
+        <blockquote>We implement inpainting to fill in missing or masked regions of images using diffusion models. This is done by forcing the image at each timestep to remain consistent with the unmasked region (with noise added through the forward process) while generating the masked portion through the denoising process.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/campanile_64x64.jpg" width="100px" />
+                        <figcaption>Campanile</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_camp_mask.png" width="100px" />
+                        <figcaption>Mask</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_camp_replace.png" width="100px" />
+                        <figcaption>Hole to Fill</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_camp_paint.png" width="100px" />
+                        <figcaption>Campanile Inpainted</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_boat.png" width="100px" />
+                        <figcaption>Boat</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_boat_mask.png" width="100px" />
+                        <figcaption>Mask</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_boat_replace.png" width="100px" />
+                        <figcaption>Hole to Fill</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_boat_paint.png" width="100px" />
+                        <figcaption>Boat Inpainted</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_alley.png" width="100px" />
+                        <figcaption>Alley</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_alley_mask.png" width="100px" />
+                        <figcaption>Mask</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_alley_replace.png" width="100px" />
+                        <figcaption>Hole to Fill</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_2_alley_paint.png" width="100px" />
+                        <figcaption>Alley Inpainted</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.7.3 Text-Conditional Image-to-image Translation</h3>
+        <blockquote>So far, we have been using the original image as a sort of guide, and then adding/removing noise to generate unique variations of the input while conditioning on the prompt "a high quality photo". Now, we condition on other unique text prompts to better guide the denoising process towards desired outputs, while preserving some similarities with the original image.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 10px">
+                        <figcaption>"a celestial observatory floating above the clouds at twilight"</figcaption>
+                    </td>
+                </tr>
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/campanile_64x64.jpg" width="100px" />
+                        <figcaption>Campanile</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_campanile_20.png" width="100px" />
+                        <figcaption>Level 20</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_campanile_10.png" width="100px" />
+                        <figcaption>Level 10</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_campanile_7.png" width="100px" />
+                        <figcaption>Level 7</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_campanile_5.png" width="100px" />
+                        <figcaption>Level 5</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_campanile_3.png" width="100px" />
+                        <figcaption>Level 3</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_campanile_1.png" width="100px" />
+                        <figcaption>Level 1</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 10px">
+                        <figcaption>"a moonlit desert caravan moving between glowing dunes"</figcaption>
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/head.jpg" width="100px" />
+                        <figcaption>Headshot</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_head_20.png" width="100px" />
+                        <figcaption>Level 20</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_head_10.png" width="100px" />
+                        <figcaption>Level 10</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_head_7.png" width="100px" />
+                        <figcaption>Level 7</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_head_5.png" width="100px" />
+                        <figcaption>Level 5</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_head_3.png" width="100px" />
+                        <figcaption>Level 3</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_head_1.png" width="100px" />
+                        <figcaption>Level 1</figcaption>
+					</td>
+				</tr>
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 10px">
+                        <figcaption>"a secluded hot spring surrounded by snow-covered pines"</figcaption>
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/mario.jpg" width="100px" />
+                        <figcaption>Mario</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_mario_20.png" width="100px" />
+                        <figcaption>Level 20</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_mario_10.png" width="100px" />
+                        <figcaption>Level 10</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_mario_7.png" width="100px" />
+                        <figcaption>Level 7</figcaption>
+					</td>
+				</tr>
+                <tr>
+					<td style="text-align: center; padding: 10px"></td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_mario_5.png" width="100px" />
+                        <figcaption>Level 5</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_mario_3.png" width="100px" />
+                        <figcaption>Level 3</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a7_3_mario_1.png" width="100px" />
+                        <figcaption>Level 1</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>1.8 Visual Anagrams</h3>
+        <blockquote>We generate visual anagrams, images that depict one scene when viewed upright and a different scene when viewed upside down. During diffusion, at each denoising step we evaluate two prompts: one on the current image and one on a vertically flipped version of the image. We then average the predicted noise from both prompts and use this combined noise estimate to update the image. By incorporating information from both orientations at every step, the model is encouraged to satisfy both prompts simultaneously, producing the anagram effect.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a8_0.png" width="200px" />
+                        <figcaption>"a painting of a woman wearing a blue dress"</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a8_0_flipped.png" width="200px" />
+                        <figcaption>"a painting of a waterfall in a clearing"</figcaption>
+                    </td>
+                </tr>
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a8_1.png" width="200px" />
+                        <figcaption>"an oil painting of an old man"</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a8_1_flipped.png" width="200px" />
+                        <figcaption>"an oil painting of people around a campfire"</figcaption>
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a8_2.png" width="200px" />
+                        <figcaption>"a lithograph of a skull"</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a8_2_flipped.png" width="200px" />
+                        <figcaption>"a wind-swept plateau dotted with ancient standing stones"</figcaption>
+                    </td>
+                </tr>
+			</table>
+		</div>
+
+		<h3>1.9 Hybrid Images</h3>
+        <blockquote>Similar to Part 1.8, we generate hybrid images that reveal different content at different viewing distances. This is achieved by combining the low-frequency components of one image with the high-frequency components of another. During diffusion, at each denoising step we separately filter the predicted noise tensors: a low-pass filter is applied to the noise from one prompt, and a high-pass filter to the noise from the other. The filtered noise estimates are then combined to form a single noise update.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a9_0.png" width="200px" />
+                        <figcaption>Hybrid of "a quiet harbor at sunrise with boats drifting through golden mist"<br/>and "a secluded hot spring surrounded by snow-covered pines"</figcaption>
+					</td>
+                </tr>
+				<tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_a/part_a9_1.png" width="200px" />
+                        <figcaption>Hybrid of "a forgotten temple overgrown with vines and glowing symbols"<br/>and "a wind-swept plateau dotted with ancient standing stones"</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
+
+        <h1>Part B: Flow Matching from Scratch!</h1>
+
+		<h2>Part 1: Training a Single-Step Denoising UNet</h2>
+
+		<h3>1.1 Implementing the UNet</h3>
+
+        <h3>1.2 Using the UNet to Train a Denoiser</h3>
+
+        <h3>1.2.1 Training</h3>
+
+        <h3>1.2.2 Out-of-Distribution Testing</h3>
+
+        <h3>1.2.3 Denoising Pure Noise</h3>
+
+        <h2>Part 2: Training a Flow Matching Model</h2>
+
+        <h3>2.1 Adding Time Conditioning to UNet</h3>
+
+        <h3>2.2 Training the UNet</h3>
+
+        <h3>2.3 Sampling from the UNet</h3>
+
+        <h3>2.4 Adding Class-Conditioning to UNet</h3>
+
+        <h3>2.5 Training the UNet</h3>
+
+        <h3>2.6 Sampling from the UNet</h3>
+
+
+		</div>
+	</body>
+</html>
