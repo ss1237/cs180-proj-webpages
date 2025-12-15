@@ -69,7 +69,7 @@
 
 		<br>
 
-		<p>This project explores the power of diffusion models for image generation and manipulation. In Part A, we implement diffusion sampling loops, use pre-trained models for various tasks including inpainting and creating optical illusions, and experiment with text-to-image generation using DeepFloyd IF. In Part B, we train our own diffusion model from scratch, using a U-Net architecture to generate handwritten digits from noise.
+		<p>This project explores the power of diffusion models for image generation and manipulation. In Part A, we implement diffusion sampling loops, use pre-trained models for various tasks including inpainting and creating optical illusions, and experiment with text-to-image generation using DeepFloyd IF. In Part B, we train our own diffusion model from scratch, using a U-Net architecture to generate handwritten digits from noise. We explore various modifications such as time conditioning, class conditioning, and classifier-free guidance to improve the quality and consistency of the generated digits.
 		</p>
 
 		<br>
@@ -78,7 +78,34 @@
 
 		<h2>Part 0: Setup</h2>
 
-		<blockquote>Using the DeepFloyd IF model, we experiment with various text prompts to generate images from random noise. The outputs are quite impressive! They are all quite diverse, but notably have bluer tones. This may be because of the specific prompts used, or some inherent bias in the model.</blockquote>
+		<blockquote>Using the DeepFloyd IF model, we experiment with various text prompts to generate images from random noise. The prompts we decide to encode are:
+
+        <ul>
+            <li>an oil painting of people around a campfire</li>
+            <li>an oil painting of an old man</li>
+            <li>a lithograph of waterfalls</li>
+            <li>a lithograph of a skull</li>
+            <li>a quiet harbor at sunrise with boats drifting through golden mist</li>
+            <li>a time traveler sketching notes in a rain-soaked alley</li>
+            <li>a celestial observatory floating above the clouds at twilight</li>
+            <li>a moonlit desert caravan moving between glowing dunes</li>
+            <li>an underwater city carved into coral cliffs, softly illuminated</li>
+            <li>a lone astronomer watching a comet pass over a frozen tundra</li>
+            <li>a floating marketplace suspended by ropes and lanterns</li>
+            <li>a forgotten temple overgrown with vines and glowing symbols</li>
+            <li>a glass-domed greenhouse filled with exotic, otherworldly plants</li>
+            <li>a mechanical bird perched on a clock tower at dusk</li>
+            <li>a secluded hot spring surrounded by snow-covered pines</li>
+            <li>a hidden canyon with waterfalls cascading into a luminous pool</li>
+            <li>a wind-swept plateau dotted with ancient standing stones</li>
+            <li>a seaside lighthouse guiding ships through a violet storm</li>
+            <li>a wandering mage setting up camp beneath a sky full of auroras</li>
+            <li>a painting of a woman wearing a blue dress</li>
+            <li>a painting of a waterfall in a clearing</li>
+            <li>a high quality photo</li>
+        </ul>
+            
+        The outputs below are quite impressive. They are all quite diverse, but notably have bluer tones. This may be due to the specific prompts used, or some inherent bias in the model. Either way, the images are faithful to the prompt used, although there may be other added details.</blockquote>
 
         <div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
@@ -218,6 +245,12 @@
 
         <div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 10px">
+                        <img src="imgs/campanile_64x64.jpg" width="200px" />
+                        <figcaption>Original Image</figcaption>
+                    </td>
+                </tr>
 				<tr>
 					<td style="text-align: center; padding: 10px">
                         <img src="imgs/out_a/part_a1_noise_level_250.png" width="200px" />
@@ -818,30 +851,235 @@
 
 		<h2>Part 1: Training a Single-Step Denoising UNet</h2>
 
-		<h3>1.1 Implementing the UNet</h3>
+        <h3>1.1 Implementing the UNet</h3>
+
+        <blockquote>We implement a UNet architecture as shown in the diagram below. It consists of a few downsampling and upsampling blocks with skip connections.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/unconditional_unet.png" width="600px" />
+                        <figcaption>Unconditional UNet</figcaption>
+                    </td>
+                </tr>
+			</table>
+		</div>
 
         <h3>1.2 Using the UNet to Train a Denoiser</h3>
 
+        <blockquote>For this part, we test out different amounts of noise added to an image and observe the outputs. We notice that the more noise we add (higher sigma), the more similar the output is to random noise and the less distinguishable the digits become.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_0_4_grid.png" width="600px" />
+					</td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_0_0_grid.png" width="600px" />
+					</td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_0_5_grid.png" width="600px" />
+					</td>
+                </tr>
+			</table>
+		</div>
+
         <h3>1.2.1 Training</h3>
+
+        <blockquote>Now, we train a UNet denoiser specifically on images with sigma=0.5. We use the hyperparameters given in the project page, and visualize the training loss over time as well as predictions from epochs 1 and 5. We see that the model at epoch 5 performs better than the model at epoch 1, due to its sharper strokes and better removal of artifacts.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px" colspan="2">
+                        <img src="imgs/out_b/unconditional_unet_sigma_5_loss.png" width="600px" />
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_1_e1_grid.png" width="300px" />
+                        <figcaption>Epoch 1</figcaption>
+					</td>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_1_e5_grid.png" width="300px" />
+                        <figcaption>Epoch 5</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
 
         <h3>1.2.2 Out-of-Distribution Testing</h3>
 
+        <blockquote>Since we only trained on sigma=0.5, we test our denoiser on other levels of noise. As expected, the denoiser performs poorly on higher noise levels. However, it performs well on lower noise levels, motivating the need for training on higher levels of noise to improve generalization.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_2_grid.png" width="600px" />
+					</td>
+                </tr>
+			</table>
+		</div>
+
         <h3>1.2.3 Denoising Pure Noise</h3>
+
+        <blockquote>As mentioned in the previous part, the need arises to train on higher levels of noise, so we try training on pure noise every time. However, rather than performing well, we see that the denoiser converges on the same output regardless of input noise. However, the training loss did go down to a fairly reasonable value. This is an indication of mode collapse, a common pitfall of generative models.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px" colspan="2">
+                        <img src="imgs/out_b/unconditional_unet_loss.png" width="600px" />
+                    </td>
+                </tr>
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_3_e1_grid.png" width="600px" />
+                        <figcaption>Epoch 1</figcaption>
+					</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b1_2_3_e5_grid.png" width="600px" />
+                        <figcaption>Epoch 5</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
 
         <h2>Part 2: Training a Flow Matching Model</h2>
 
-        <h3>2.1 Adding Time Conditioning to UNet</h3>
+        <h3>Adding Time Conditioning to UNet</h3>
+
+        <blockquote>To enable the UNet to handle different noise levels during training, we add time conditioning. This allows the model to learn how to denoise at various noise levels, which is essential for flow matching. The time input here essentially functions as a marker that tells the model what noise level it is currently at, allowing it to adapt its denoising strategy accordingly.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+					<td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/conditioned_unet.png" width="600px" />
+                        <figcaption>Time Conditioned UNet</figcaption>
+					</td>
+                </tr>
+			</table>
+		</div>
 
         <h3>2.2 Training the UNet</h3>
 
+        <blockquote>Learning from the mistakes in Part 1, we now train a time-conditioned UNet for denoising. For each image, we noise it to a different level and train the UNet to denoise it back to the original. For this part, we use all hyperparameters as suggested, including the exponential learning rate decay scheduler. The training loss is below.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_2_loss.png" width="600px" />
+                    </td>
+                </tr>
+			</table>
+		</div>
+
         <h3>2.3 Sampling from the UNet</h3>
+
+        <blockquote>Now, using this UNet, we can iteratively denoise similar to what we did in Part A. We see that training the model for longer results in more legible results. However, these are not perfect and we still lack the ability to control the generated class.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_3_samples_e1.png" width="600px" />
+                        <figcaption>Epoch 1</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_3_samples_e5.png" width="600px" />
+                        <figcaption>Epoch 5</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_3_samples_e10.png" width="600px" />
+                        <figcaption>Epoch 10</figcaption>
+                    </td>
+                </tr>
+			</table>
+		</div>
 
         <h3>2.4 Adding Class-Conditioning to UNet</h3>
 
+        <blockquote>To give us more control over the image generation, we modify the UNet to take class labels as additional input. This allows us to condition the generation process on specific classes, leading to more targeted and controllable image synthesis. However, to allow us to generate unconditioned images as well, we train with a random chance of dropping the class conditioning vector.</blockquote>
+
         <h3>2.5 Training the UNet</h3>
 
-        <h3>2.6 Sampling from the UNet</h3>
+        <blockquote>We train this UNet with a similar procedure as the time-conditioned UNet, but we also incorporate the class conditioning mentioned in Part 2.4 during training. Notably, we achieve slightly better loss although it is still quite close to the time-conditioned version.</blockquote>
 
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_5_loss.png" width="600px" />
+                    </td>
+                </tr>
+			</table>
+		</div>
+
+        <h3>2.6 Sampling from the UNet</h3>
+        
+        <blockquote>Now, we sample with class-conditioning and use classifier-free guidance as in Part A to improve the quality of generated images. Here, we see that the images are much better than the non-class-conditioned counterparts, demonstrating the effectiveness of both class conditioning and classifier-free guidance.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_6_samples_e1.png" width="600px" />
+                        <figcaption>Epoch 1</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_6_samples_e5.png" width="600px" />
+                        <figcaption>Epoch 5</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_6_samples_e10.png" width="600px" />
+                        <figcaption>Epoch 10</figcaption>
+                    </td>
+                </tr>
+			</table>
+		</div>
+
+        <blockquote>Additionally, we see if we can remove the scheduler and achieve comparable performance. For this comparison, we compare outputs from two models both trained for 5 epochs: one with the scheduler and one without. In this case, removing the scheduler creates slightly worse images, but the loss curves are relatively the same. However, in cases where there is a discrepancy, we can switch to a lower fixed learning rate for improved stability that somewhat mimics what the exponential scheduler eventually does.</blockquote>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: fit-content; text-align: center; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_6_samples_e5.png" width="600px" />
+                        <figcaption>Epoch 5</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_6_samples_no_scheduler_e5.png" width="600px" />
+                        <figcaption>Epoch 5 (No Scheduler)</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding: 10px">
+                        <img src="imgs/out_b/part_b2_6_no_scheduler_loss.png" width="600px" />
+                    </td>
+                </tr>
+			</table>
+		</div>
 
 		</div>
 	</body>
